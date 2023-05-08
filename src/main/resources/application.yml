@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: uj-problems
+  datasource:
+    type: org.postgresql.jdbc2.optional.SimpleDataSource
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:mysecretpassword}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/db_ucb_judge}
+    jpa:
+      hibernate:
+        ddl-auto: update
+
+server:
+  port: ${PORT:8082}
+
+eureka:
+  client:
+    registerWithEureka: true
+  serviceUrl:
+    defaultZone: ${DISCOVERY_SERVER_URL:http://localhost:8761/eureka}
+
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8080/}
+  autodetect-bearer-only: true
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET:BNHREThKV64GqdjrJKJqkmLLowtwjfSi}
+  realm: ${KEYCLOAK_REALM:ucb-judge}
+  resource: ${KEYCLOAK_CLIENT_ID:uj-problems}
+  ssl-required: none
+  use-resource-role-mappings: false
+  security-constraints:
+    - auth-roles:
+        - professor
+      security-collections:
+        - name: Problem CRUD operations
+          omitted-methods:
+            - OPTIONS
+          patterns:
+            - /api/v1/problems
+            - /api/v1/problems/{id}
+#    - auth-roles:
+#      - student
+#      security-collections:
+#        - name: Get problems
+#          patterns:
+#            - /api/v1/problems
+#            - /api/v1/problems/{id}
+#          methods:
+#            - GET
