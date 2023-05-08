@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
+import ucb.judge.ujproblems.dto.FileDto
 import ucb.judge.ujproblems.dto.ResponseDto
 
 @FeignClient(name = "uj-file-uploader")
@@ -15,5 +16,5 @@ interface UjFileUploaderService {
         @RequestPart(value = "file") file: MultipartFile,
         @RequestPart(value = "bucket") bucket: String,
         @RequestPart(value = "customFilename") customFilename: Boolean = false
-    ): ResponseDto<Long>
+    ): ResponseDto<FileDto>
 }

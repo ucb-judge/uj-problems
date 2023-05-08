@@ -36,12 +36,12 @@ class ProblemBl constructor(
         val descriptionFile = FileUtils.createProblemFile(sanitizedDescription, sanitizedInput, sanitizedOutput);
         // upload problem description to minio
         val fileUploaderResponse = ujFileUploaderService.uploadFile(descriptionFile, "problems");
-        val s3DescriptionId = fileUploaderResponse.data;
+        val fileDto = fileUploaderResponse.data;
         logger.info("Problem description file created and uploaded to minio")
         // store problem in database
         // FIXME: use professorId from token using keycloak
         logger.info("Storing problem in database")
-        val problem = Problem(1, newProblem.title, newProblem.isPublic, s3DescriptionId!!, newProblem.maxTime, newProblem.maxMemory, true);
+        val problem = Problem(1, newProblem.title, newProblem.isPublic, fileDto!!.fileId, newProblem.maxTime, newProblem.maxMemory, true);
         val savedProblem = problemRepository.save(problem);
         val problemId = savedProblem.problemId;
 
@@ -51,13 +51,13 @@ class ProblemBl constructor(
             // upload input
             val inputFile = FileUtils.createTextFile(testcase.input, "${problemId}-input-${index}");
             val inputUploadResponse = ujFileUploaderService.uploadFile(inputFile, "inputs", true);
-            val inputId = inputUploadResponse.data;
+            val inputFileDto = inputUploadResponse.data;
             // upload output
             val outputFile = FileUtils.createTextFile(testcase.output, "${problemId}-output-${index}");
             val outputUploadResponse = ujFileUploaderService.uploadFile(outputFile, "outputs", true);
-            val outputId = outputUploadResponse.data;
+            val outputFileDto = outputUploadResponse.data;
             // store testcase in database
-            val newTestcase = Testcase(problemId, index + 1, inputId!!, outputId!!, testcase.isSample, true);
+            val newTestcase = Testcase(problemId, index + 1, inputFileDto!!.fileId, outputFileDto!!.fileId, testcase.isSample, true);
             testcaseRepository.save(newTestcase)
         }
         logger.info("Storing admitted languages and tags in database")
