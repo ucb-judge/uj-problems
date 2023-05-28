@@ -10,30 +10,33 @@ class Testcase {
     @Column(name = "testcase_id")
     var testcaseId: Long = 0;
 
-    @Column(name = "problem_id")
-    var problemId: Long = 0;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "problem_id", nullable = false)
+    var problem: Problem? = null;
 
     @Column(name = "testcase_number")
     var testcaseNumber: Int = 0;
 
-    @Column(name = "s3_input")
-    var s3Input: Long = 0;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "s3_input")
+    var s3Input: S3Object? = null;
 
-    @Column(name = "s3_output")
-    var s3Output: Long = 0;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "s3_output")
+    var s3Output: S3Object? = null;
 
     @Column(name = "is_sample")
     var isSample: Boolean = false;
 
-    @Column
+    @Column(name = "status")
     var status: Boolean = true;
 
-    constructor(problemId: Long, testcaseNumber: Int, s3Input: Long, s3Output: Long, isSample: Boolean, status: Boolean) {
-        this.problemId = problemId
+    constructor(problem: Problem, testcaseNumber: Int, s3Input: S3Object, s3Output: S3Object, isSample: Boolean) {
+        this.problem = problem
         this.testcaseNumber = testcaseNumber
         this.s3Input = s3Input
         this.s3Output = s3Output
         this.isSample = isSample
-        this.status = status
+        this.status = true
     }
 }

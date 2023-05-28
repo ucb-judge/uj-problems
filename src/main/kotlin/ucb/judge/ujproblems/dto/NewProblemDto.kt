@@ -12,8 +12,8 @@ data class NewProblemDto(
     val inputDescription: String = "",
     val outputDescription: String = "",
     val testcases: Array<NewTestcaseDto> = emptyArray(),
-    val languages: Array<Int> = emptyArray(),
-    val tags: Array<Int> = emptyArray()
+    val languages: Array<Long> = emptyArray(),
+    val tags: Array<Long> = emptyArray()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

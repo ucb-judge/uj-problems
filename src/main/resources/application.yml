@@ -3,12 +3,14 @@ spring:
     name: uj-problems
   datasource:
     type: org.postgresql.jdbc2.optional.SimpleDataSource
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:mysecretpassword}
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/db_ucb_judge}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:mysecretpassword}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/db_ucb_judge}
     jpa:
       hibernate:
         ddl-auto: update
+  zipkin:
+    base-url: ${ZIPKIN_SERVER_URI:http://localhost:9411}
 
 server:
   port: ${PORT:8082}
@@ -16,11 +18,11 @@ server:
 eureka:
   client:
     registerWithEureka: true
-  serviceUrl:
-    defaultZone: ${DISCOVERY_SERVER_URL:http://localhost:8761/eureka}
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URI:http://localhost:8711/eureka}
 
 keycloak:
-  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8080/}
+  auth-server-url: ${KEYCLOAK_SERVER_URI:http://localhost:8090}
   autodetect-bearer-only: true
   credentials:
     secret: ${KEYCLOAK_CLIENT_SECRET:BNHREThKV64GqdjrJKJqkmLLowtwjfSi}

@@ -3,29 +3,65 @@ package ucb.judge.ujproblems.bl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import ucb.judge.ujproblems.dao.Problem
-import ucb.judge.ujproblems.dao.Testcase
-import ucb.judge.ujproblems.dao.repository.ProblemRepository
-import ucb.judge.ujproblems.dao.repository.TestcaseRepository
+import ucb.judge.ujproblems.dao.*
+import ucb.judge.ujproblems.dao.repository.*
 import ucb.judge.ujproblems.dto.NewProblemDto
+import ucb.judge.ujproblems.exception.UjNotFoundException
+import ucb.judge.ujproblems.mappers.S3ObjectMapper
 import ucb.judge.ujproblems.service.UjFileUploaderService
 import ucb.judge.ujproblems.utils.FileUtils
 import ucb.judge.ujproblems.utils.LatexSanitizer
+import ucb.judge.ujproblems.utils.TokenUtils
 
 @Service
 class ProblemBl constructor(
     private val ujFileUploaderService: UjFileUploaderService,
     private val problemRepository: ProblemRepository,
-    private val testcaseRepository: TestcaseRepository
+    private val testcaseRepository: TestcaseRepository,
+    private val languageRepository: LanguageRepository,
+    private val tagRepository: TagRepository,
+    private val professorRepository: ProfessorRepository
 ) {
 
     companion object {
         val logger: Logger = LoggerFactory.getLogger(ProblemBl::class.java)
     }
 
-    fun createProblem(newProblem: NewProblemDto): Problem {
+    fun createProblem(newProblem: NewProblemDto, token: String): Long {
         logger.info("Starting business logic for problem creation");
+        val professor = professorRepository.findByKcUuid(TokenUtils.getField(token, "sid"))
+            ?: throw UjNotFoundException("Professor not found");
+
+        logger.info("Creating problem for professor ${professor.professorId}");
+        val newProblemEntity = Problem();
+
+        newProblemEntity.title = newProblem.title;
+        newProblemEntity.isPublic = newProblem.isPublic;
+        newProblemEntity.maxTime = newProblem.maxTime;
+        newProblemEntity.maxMemory = newProblem.maxMemory;
+        newProblemEntity.professor = professor;
+        newProblemEntity.status = true;
+
+        // get admitted languages
+        val admittedLanguages = ArrayList<AdmittedLanguage>();
+        for(language in newProblem.languages) {
+            // store language in database
+            val languageEntity = languageRepository.findById(language)
+                .orElseThrow { UjNotFoundException("Language not found") };
+            admittedLanguages.add(AdmittedLanguage(languageEntity, newProblemEntity))
+        }
+        newProblemEntity.admittedLanguages = admittedLanguages;
+
+        // get problem tags
+        val problemTags = ArrayList<ProblemTag>();
+        for(tag in newProblem.tags) {
+            // store tag in database
+            val tagEntity = tagRepository.findById(tag)
+                .orElseThrow() { UjNotFoundException("Tag not found") };
+            problemTags.add(ProblemTag(tagEntity, newProblemEntity));
+        }
+        newProblemEntity.problemTags = problemTags;
+
         logger.info("Creating problem description file")
         // sanitize description
         val sanitizedDescription = LatexSanitizer.sanitizeLatex(newProblem.description);
@@ -34,19 +70,20 @@ class ProblemBl constructor(
         // sanitize output
         val sanitizedOutput = LatexSanitizer.sanitizeLatex(newProblem.outputDescription);
         val descriptionFile = FileUtils.createProblemFile(sanitizedDescription, sanitizedInput, sanitizedOutput);
+
         // upload problem description to minio
         val fileUploaderResponse = ujFileUploaderService.uploadFile(descriptionFile, "problems");
         val fileDto = fileUploaderResponse.data;
         logger.info("Problem description file created and uploaded to minio")
-        // store problem in database
-        // FIXME: use professorId from token using keycloak
-        logger.info("Storing problem in database")
-        val problem = Problem(1, newProblem.title, newProblem.isPublic, fileDto!!.fileId, newProblem.maxTime, newProblem.maxMemory, true);
-        val savedProblem = problemRepository.save(problem);
-        val problemId = savedProblem.problemId;
 
-        logger.info("Storing problem testcases in database")
-        // store problem testcases in minio
+        val s3Object = S3ObjectMapper.fromFileDto(fileDto!!);
+        newProblemEntity.s3Description = s3Object;
+
+        // store problem in database
+        logger.info("Storing problem in database")
+        val savedEntity = problemRepository.save(newProblemEntity);
+        val problemId = savedEntity.problemId;
+
         for ((index, testcase) in newProblem.testcases.withIndex()) {
             // upload input
             val inputFile = FileUtils.createTextFile(testcase.input, "${problemId}-input-${index}");
@@ -57,21 +94,11 @@ class ProblemBl constructor(
             val outputUploadResponse = ujFileUploaderService.uploadFile(outputFile, "outputs", true);
             val outputFileDto = outputUploadResponse.data;
             // store testcase in database
-            val newTestcase = Testcase(problemId, index + 1, inputFileDto!!.fileId, outputFileDto!!.fileId, testcase.isSample, true);
+            val inputEntity = S3ObjectMapper.fromFileDto(inputFileDto!!);
+            val outputEntity = S3ObjectMapper.fromFileDto(outputFileDto!!);
+            val newTestcase = Testcase(savedEntity, index + 1, inputEntity, outputEntity, testcase.isSample);
             testcaseRepository.save(newTestcase)
         }
-        logger.info("Storing admitted languages and tags in database")
-        // store admitted languages in database
-        for(language in newProblem.languages) {
-            // store language in database
-//            problemRepository.saveLanguage(problemId, language);
-        }
-        // store problem tags in database
-        for(tag in newProblem.tags) {
-            // store tag in database
-//            problemRepository.saveTag(problemId, tag);
-
-        }
-        return savedProblem;
+        return savedEntity.problemId;
     }
 }

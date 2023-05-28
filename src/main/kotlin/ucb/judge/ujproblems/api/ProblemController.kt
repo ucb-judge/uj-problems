@@ -3,10 +3,7 @@ package ucb.judge.ujproblems.api
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import ucb.judge.ujproblems.bl.ProblemBl
 import ucb.judge.ujproblems.dao.Problem
 import ucb.judge.ujproblems.dto.NewProblemDto
@@ -22,13 +19,16 @@ class ProblemController constructor(
     }
 
     @PostMapping
-    fun createProblem(@RequestBody newProblemDto: NewProblemDto): ResponseEntity<ResponseDto<Long>> {
+    fun createProblem(
+        @RequestBody newProblemDto: NewProblemDto,
+        @RequestHeader("Authorization") token: String
+    ): ResponseEntity<ResponseDto<Long>> {
         logger.info("POST: creating problem");
-        val newProblem: Problem = problemBl.createProblem(newProblemDto);
+        val newProblemId: Long = problemBl.createProblem(newProblemDto, token);
         logger.info("Sending response");
         return ResponseEntity.ok(
             ResponseDto(
-                data = newProblem.problemId,
+                data = newProblemId,
                 message = "Success",
                 successful = true
             )
