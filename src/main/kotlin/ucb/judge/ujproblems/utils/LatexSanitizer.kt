@@ -2,6 +2,12 @@ package ucb.judge.ujproblems.utils
 
 class LatexSanitizer {
     companion object {
+
+        /**
+         * Sanitizes a string to be used in LaTeX to avoid injection attacks.
+         * @param input The string to be sanitized.
+         * @return The sanitized string.
+         */
         @JvmStatic
         fun sanitizeLatex(input: String): String {
             // Replace backslashes with double backslashes

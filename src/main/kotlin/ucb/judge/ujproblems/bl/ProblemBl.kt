@@ -27,6 +27,13 @@ class ProblemBl constructor(
         val logger: Logger = LoggerFactory.getLogger(ProblemBl::class.java)
     }
 
+    /**
+     * Business logic to create a new problem. This method will create a new problem in the database,
+     * and will upload the files to MinIO.
+     * @param newProblem: DTO with the information of the new problem.
+     * @param token: JWT token of the user.
+     * @return Long: Id of the new problem.
+     */
     fun createProblem(newProblem: NewProblemDto, token: String): Long {
         logger.info("Starting business logic for problem creation");
         val professor = professorRepository.findByKcUuid(TokenUtils.getField(token, "sid"))

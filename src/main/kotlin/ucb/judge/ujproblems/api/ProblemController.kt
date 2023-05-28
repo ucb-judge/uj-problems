@@ -18,6 +18,12 @@ class ProblemController constructor(
         val logger: Logger = LoggerFactory.getLogger(ProblemController::class.java)
     }
 
+    /**
+     * Method to create a new problem. For this, the user should have the role of professor.
+     * @param newProblemDto: DTO with the information of the new problem.
+     * @param token: JWT token of the user.
+     * @return ResponseEntity<ResponseDto<Long>>: Response with the id of the new problem.
+     */
     @PostMapping
     fun createProblem(
         @RequestBody newProblemDto: NewProblemDto,

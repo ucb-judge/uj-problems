@@ -8,6 +8,9 @@ import org.springframework.web.multipart.MultipartFile
 import ucb.judge.ujproblems.dto.FileDto
 import ucb.judge.ujproblems.dto.ResponseDto
 
+/**
+ * Interface to communicate with the uj-file-uploader service.
+ */
 @FeignClient(name = "uj-file-uploader")
 interface UjFileUploaderService {
 
