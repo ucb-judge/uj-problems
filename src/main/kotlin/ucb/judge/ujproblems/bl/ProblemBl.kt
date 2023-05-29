@@ -1,5 +1,6 @@
 package ucb.judge.ujproblems.bl
 
+import org.checkerframework.checker.nullness.Opt.orElseThrow
 import org.keycloak.KeycloakSecurityContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,12 +10,13 @@ import ucb.judge.ujproblems.dao.repository.*
 import ucb.judge.ujproblems.dto.NewProblemDto
 import ucb.judge.ujproblems.dto.ProblemDto
 import ucb.judge.ujproblems.exception.UjNotFoundException
+import ucb.judge.ujproblems.mappers.ProblemMapper
 import ucb.judge.ujproblems.mappers.S3ObjectMapper
+import ucb.judge.ujproblems.service.MinioService
 import ucb.judge.ujproblems.service.UjFileUploaderService
 import ucb.judge.ujproblems.utils.FileUtils
 import ucb.judge.ujproblems.utils.KeycloakSecurityContextHolder
 import ucb.judge.ujproblems.utils.LatexSanitizer
-import ucb.judge.ujproblems.utils.TokenUtils
 
 @Service
 class ProblemBl constructor(
@@ -23,7 +25,8 @@ class ProblemBl constructor(
     private val testcaseRepository: TestcaseRepository,
     private val languageRepository: LanguageRepository,
     private val tagRepository: TagRepository,
-    private val professorRepository: ProfessorRepository
+    private val professorRepository: ProfessorRepository,
+    private val minioService: MinioService
 ) {
 
     companion object {
@@ -35,9 +38,12 @@ class ProblemBl constructor(
      * @return ProblemDto: Problem with the given id.
      */
     fun getProblemById(problemId: Long): ProblemDto {
-        val problemDto: ProblemDto = ProblemDto();
-
-        return problemDto;
+        val problem: Problem = problemRepository.findById(problemId)
+            .orElseThrow { UjNotFoundException("Problem not found") };
+        if(!problem.isPublic && !problem.professor!!.kcUuid.equals(KeycloakSecurityContextHolder.getSubject())) {
+            throw UjNotFoundException("Problem not found");
+        }
+        return ProblemMapper.entityToDto(problem, minioService);
     }
 
     /**
