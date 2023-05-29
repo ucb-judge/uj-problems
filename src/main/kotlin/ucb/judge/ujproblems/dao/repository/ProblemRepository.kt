@@ -7,4 +7,5 @@ import ucb.judge.ujproblems.dao.Problem
 
 @Repository
 interface ProblemRepository : JpaRepository<Problem, Long> {
+    fun existsByProblemIdAndStatusIsTrue(problemId: Long): Boolean
 }

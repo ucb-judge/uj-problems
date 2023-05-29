@@ -47,6 +47,16 @@ class ProblemBl constructor(
     }
 
     /**
+     * Business logic to verify if a problem exists. This method will return true if the problem exists, and false
+     * otherwise.
+     * @param problemId: Id of the problem.
+     * @return Boolean: True if the problem exists, false otherwise.
+     */
+    fun existsProblemById(problemId: Long): Boolean {
+        return problemRepository.existsByProblemIdAndStatusIsTrue(problemId);
+    }
+
+    /**
      * Business logic to create a new problem. This method will create a new problem in the database,
      * and will upload the files to MinIO.
      * @param newProblem: DTO with the information of the new problem.

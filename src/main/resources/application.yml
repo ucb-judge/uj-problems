@@ -48,6 +48,14 @@ keycloak:
             - GET
           patterns:
             - /api/v1/problems/*
+    - auth-roles:
+      - uj-problems-access
+      security-collections:
+        - name: Check if problem exists
+          methods:
+            - GET
+          patterns:
+            - /api/v1/problems/*/exists
 
 minio:
   url: ${MINIO_SERVER_URI:http://localhost:9000}

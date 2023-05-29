@@ -42,6 +42,27 @@ class ProblemController constructor(
     }
 
     /**
+     * Method to verify if a problem exists. For this, the client should have the role uj-problems-access.
+     * @param problemId: Id of the problem.
+     * @return ResponseEntity<ResponseDto<Boolean>>: Response with the verification.
+     */
+    @GetMapping("/{id}/exists")
+    fun existsProblemById(
+        @PathVariable id: Long
+    ): ResponseEntity<ResponseDto<Boolean>> {
+        logger.info("GET: verifying if problem exists");
+        val exists: Boolean = problemBl.existsProblemById(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = exists,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
+
+    /**
      * Method to create a new problem. For this, the user should have the role of professor.
      * @param newProblemDto: DTO with the information of the new problem.
      * @param token: JWT token of the user.
