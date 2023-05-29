@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*
 import ucb.judge.ujproblems.bl.ProblemBl
 import ucb.judge.ujproblems.dao.Problem
 import ucb.judge.ujproblems.dto.NewProblemDto
+import ucb.judge.ujproblems.dto.ProblemDto
 import ucb.judge.ujproblems.dto.ResponseDto
 
 @RestController
@@ -19,6 +20,28 @@ class ProblemController constructor(
     }
 
     /**
+     * Method to get a problem by its id. For this, the user should have either the role of professor or student.
+     * @param problemId: Id of the problem.
+     * @return ResponseEntity<ResponseDto<ProblemDto>>: Response with the problem.
+     * @throws NotFoundException: If the problem does not exist.
+     */
+    @GetMapping("/{id}")
+    fun getProblemById(
+        @PathVariable id: Long
+    ): ResponseEntity<ResponseDto<ProblemDto>> {
+        logger.info("GET: getting problem by id");
+        val problem: ProblemDto = problemBl.getProblemById(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = problem,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
+
+    /**
      * Method to create a new problem. For this, the user should have the role of professor.
      * @param newProblemDto: DTO with the information of the new problem.
      * @param token: JWT token of the user.
@@ -27,10 +50,9 @@ class ProblemController constructor(
     @PostMapping
     fun createProblem(
         @RequestBody newProblemDto: NewProblemDto,
-        @RequestHeader("Authorization") token: String
     ): ResponseEntity<ResponseDto<Long>> {
         logger.info("POST: creating problem");
-        val newProblemId: Long = problemBl.createProblem(newProblemDto, token);
+        val newProblemId: Long = problemBl.createProblem(newProblemDto);
         logger.info("Sending response");
         return ResponseEntity.ok(
             ResponseDto(

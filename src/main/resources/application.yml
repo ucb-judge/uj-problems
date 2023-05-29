@@ -39,13 +39,12 @@ keycloak:
             - OPTIONS
           patterns:
             - /api/v1/problems
-            - /api/v1/problems/{id}
-#    - auth-roles:
-#      - student
-#      security-collections:
-#        - name: Get problems
-#          patterns:
-#            - /api/v1/problems
-#            - /api/v1/problems/{id}
-#          methods:
-#            - GET
+    - auth-roles:
+      - student
+      - professor
+      security-collections:
+        - name: Get problems
+          methods:
+            - GET
+          patterns:
+            - /api/v1/problems/*

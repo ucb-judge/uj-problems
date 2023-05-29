@@ -1,15 +1,18 @@
 package ucb.judge.ujproblems.bl
 
+import org.keycloak.KeycloakSecurityContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ucb.judge.ujproblems.dao.*
 import ucb.judge.ujproblems.dao.repository.*
 import ucb.judge.ujproblems.dto.NewProblemDto
+import ucb.judge.ujproblems.dto.ProblemDto
 import ucb.judge.ujproblems.exception.UjNotFoundException
 import ucb.judge.ujproblems.mappers.S3ObjectMapper
 import ucb.judge.ujproblems.service.UjFileUploaderService
 import ucb.judge.ujproblems.utils.FileUtils
+import ucb.judge.ujproblems.utils.KeycloakSecurityContextHolder
 import ucb.judge.ujproblems.utils.LatexSanitizer
 import ucb.judge.ujproblems.utils.TokenUtils
 
@@ -27,6 +30,16 @@ class ProblemBl constructor(
         val logger: Logger = LoggerFactory.getLogger(ProblemBl::class.java)
     }
 
+    /** Business logic to get a problem by its id. This method will return the problem with the given id.
+     * @param problemId: Id of the problem.
+     * @return ProblemDto: Problem with the given id.
+     */
+    fun getProblemById(problemId: Long): ProblemDto {
+        val problemDto: ProblemDto = ProblemDto();
+
+        return problemDto;
+    }
+
     /**
      * Business logic to create a new problem. This method will create a new problem in the database,
      * and will upload the files to MinIO.
@@ -34,9 +47,11 @@ class ProblemBl constructor(
      * @param token: JWT token of the user.
      * @return Long: Id of the new problem.
      */
-    fun createProblem(newProblem: NewProblemDto, token: String): Long {
+    fun createProblem(newProblem: NewProblemDto): Long {
         logger.info("Starting business logic for problem creation");
-        val professor = professorRepository.findByKcUuid(TokenUtils.getField(token, "sid"))
+        // get kc uuid
+        val kcUuid = KeycloakSecurityContextHolder.getSubject() ?: throw UjNotFoundException("User not found");
+        val professor = professorRepository.findByKcUuid(kcUuid)
             ?: throw UjNotFoundException("Professor not found");
 
         logger.info("Creating problem for professor ${professor.professorId}");
