@@ -8,15 +8,15 @@ class ProblemMapper constructor() {
     companion object {
         fun entityToDto(problem: Problem, minioService: MinioService): ProblemDto {
             val sampleInputs: List<String> = problem.testcases!!.filter { it.isSample }.map {
-                minioService.getSharedUrl(it.s3Input!!.bucket, it.s3Input!!.filename)
+                String(minioService.getFile(it.s3Input!!.bucket, it.s3Input!!.filename))
             }
             val sampleOutputs: List<String> = problem.testcases!!.filter { it.isSample }.map {
-                minioService.getSharedUrl(it.s3Output!!.bucket, it.s3Output!!.filename)
+                String(minioService.getFile(it.s3Output!!.bucket, it.s3Output!!.filename))
             }
             return ProblemDto(
                 problemId = problem.problemId,
                 title = problem.title,
-                description = minioService.getSharedUrl(problem.s3Description!!.bucket, problem.s3Description!!.filename),
+                description = String(minioService.getFile(problem.s3Description!!.bucket, problem.s3Description!!.filename)),
                 sampleInputs = sampleInputs,
                 sampleOutputs = sampleOutputs,
                 timeLimit = problem.maxTime,
