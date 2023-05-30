@@ -9,6 +9,8 @@ import ucb.judge.ujproblems.dao.*
 import ucb.judge.ujproblems.dao.repository.*
 import ucb.judge.ujproblems.dto.NewProblemDto
 import ucb.judge.ujproblems.dto.ProblemDto
+import ucb.judge.ujproblems.dto.ProblemLimitsDto
+import ucb.judge.ujproblems.dto.TestcaseDto
 import ucb.judge.ujproblems.exception.UjNotFoundException
 import ucb.judge.ujproblems.mappers.ProblemMapper
 import ucb.judge.ujproblems.mappers.S3ObjectMapper
@@ -26,7 +28,8 @@ class ProblemBl constructor(
     private val languageRepository: LanguageRepository,
     private val tagRepository: TagRepository,
     private val professorRepository: ProfessorRepository,
-    private val minioService: MinioService
+    private val minioService: MinioService,
+    private val keycloakBl: KeycloakBl
 ) {
 
     companion object {
@@ -110,7 +113,8 @@ class ProblemBl constructor(
         val descriptionFile = FileUtils.createProblemFile(sanitizedDescription, sanitizedInput, sanitizedOutput);
 
         // upload problem description to minio
-        val fileUploaderResponse = ujFileUploaderService.uploadFile(descriptionFile, "problems");
+        val token = "Bearer ${keycloakBl.getToken()}";
+        val fileUploaderResponse = ujFileUploaderService.uploadFile(descriptionFile, "problems", token);
         val fileDto = fileUploaderResponse.data;
         logger.info("Problem description file created and uploaded to minio")
 
@@ -125,11 +129,11 @@ class ProblemBl constructor(
         for ((index, testcase) in newProblem.testcases.withIndex()) {
             // upload input
             val inputFile = FileUtils.createTextFile(testcase.input, "${problemId}-input-${index}");
-            val inputUploadResponse = ujFileUploaderService.uploadFile(inputFile, "inputs", true);
+            val inputUploadResponse = ujFileUploaderService.uploadFile(inputFile, "inputs", token, true);
             val inputFileDto = inputUploadResponse.data;
             // upload output
             val outputFile = FileUtils.createTextFile(testcase.output, "${problemId}-output-${index}");
-            val outputUploadResponse = ujFileUploaderService.uploadFile(outputFile, "outputs", true);
+            val outputUploadResponse = ujFileUploaderService.uploadFile(outputFile, "outputs", token,true);
             val outputFileDto = outputUploadResponse.data;
             // store testcase in database
             val inputEntity = S3ObjectMapper.fromFileDto(inputFileDto!!);
@@ -138,5 +142,39 @@ class ProblemBl constructor(
             testcaseRepository.save(newTestcase)
         }
         return savedEntity.problemId;
+    }
+
+    /**
+     * Business logic to get a problem's testcases.
+     */
+    fun getProblemTestcases(problemId: Long): List<TestcaseDto> {
+        logger.info("Getting testcases for problem $problemId")
+        val problem = problemRepository.findById(problemId)
+            .orElseThrow { UjNotFoundException("Problem not found") };
+        val testcaseList = ArrayList<TestcaseDto>();
+        logger.info("Problem has ${problem.testcases!!.size} testcases")
+        for (testcase in problem.testcases!!) {
+            val testcaseDto = TestcaseDto()
+            testcaseDto.input = String(minioService.getFile(testcase.s3Input!!.bucket, testcase.s3Input!!.filename))
+            testcaseDto.expectedOutput = String(minioService.getFile(testcase.s3Output!!.bucket, testcase.s3Output!!.filename))
+            testcaseDto.testcaseId = testcase.testcaseId
+            testcaseDto.testcaseNumber = testcase.testcaseNumber
+            testcaseList.add(testcaseDto)
+        }
+        logger.info("Returning ${testcaseList.size} testcases")
+        return testcaseList;
+    }
+
+    /**
+     * Business logic to get a problem's limits.
+     */
+    fun getProblemLimits(problemId: Long): ProblemLimitsDto {
+        logger.info("Getting limits for problem $problemId")
+        val problem = problemRepository.findById(problemId)
+            .orElseThrow { UjNotFoundException("Problem not found") };
+        val problemLimitsDto = ProblemLimitsDto();
+        problemLimitsDto.memoryLimit = problem.maxMemory;
+        problemLimitsDto.timeLimit = problem.maxTime;
+        return problemLimitsDto;
     }
 }

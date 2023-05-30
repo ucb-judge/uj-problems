@@ -1,5 +1,6 @@
 package ucb.judge.ujproblems.service
 
+import io.minio.GetObjectArgs
 import io.minio.GetPresignedObjectUrlArgs
 import io.minio.MinioClient
 import io.minio.http.Method
@@ -22,5 +23,15 @@ class MinioService constructor(
                 .expiry(60 * 60)
                 .build()
         )
+    }
+
+    fun getFile(bucket: String, filename: String): ByteArray {
+        val inputStream = minioClient.getObject(
+            GetObjectArgs.builder()
+                .bucket(bucket)
+                .`object`(filename)
+                .build()
+        )
+        return inputStream.readAllBytes()
     }
 }

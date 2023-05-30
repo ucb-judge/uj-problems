@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ucb.judge.ujproblems.bl.ProblemBl
-import ucb.judge.ujproblems.dao.Problem
-import ucb.judge.ujproblems.dto.NewProblemDto
-import ucb.judge.ujproblems.dto.ProblemDto
-import ucb.judge.ujproblems.dto.ResponseDto
+import ucb.judge.ujproblems.dto.*
 
 @RestController
 @RequestMapping("/api/v1/problems")
@@ -78,6 +75,44 @@ class ProblemController constructor(
         return ResponseEntity.ok(
             ResponseDto(
                 data = newProblemId,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
+
+    /**
+     * Method to get a problem's testcases by its id.
+     * @param problemId: Id of the problem.
+     * @return ResponseEntity<ResponseDto<List<TestcaseDto>>>: Response with the testcases.
+     */
+    @GetMapping("/{id}/testcases")
+    fun getProblemTestcases(@PathVariable id: Long): ResponseEntity<ResponseDto<List<TestcaseDto>>> {
+        logger.info("GET: getting problem testcases");
+        val testcases: List<TestcaseDto> = problemBl.getProblemTestcases(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = testcases,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
+
+    /**
+     * Method to get a problem's limits by its id.
+     * @param problemId: Id of the problem.
+     * @return ResponseEntity<ResponseDto<ProblemLimitsDto>>: Response with the time and memory limits.
+     */
+    @GetMapping("/{id}/limits")
+    fun getProblemLimits(@PathVariable id: Long): ResponseEntity<ResponseDto<ProblemLimitsDto>> {
+        logger.info("GET: getting problem limits");
+        val limits: ProblemLimitsDto = problemBl.getProblemLimits(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = limits,
                 message = "Success",
                 successful = true
             )

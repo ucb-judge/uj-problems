@@ -1,5 +1,6 @@
 package ucb.judge.ujproblems.dao
 
+import org.hibernate.annotations.Cascade
 import javax.persistence.*
 
 @Entity
@@ -11,6 +12,7 @@ class Testcase {
     var testcaseId: Long = 0;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "problem_id", nullable = false)
     var problem: Problem? = null;
 

@@ -48,7 +48,7 @@ keycloak:
           methods:
             - GET
           patterns:
-            - /api/v1/problems/*
+            - /api/v1/problems
 #    - auth-roles:
 #      - uj-problems-access
 #      security-collections:
@@ -56,7 +56,7 @@ keycloak:
 #          methods:
 #            - GET
 #          patterns:
-#            - /api/v1/problems/*/exists
+#            - /api/v1/problems/{id}/exists
 
 minio:
   url: ${MINIO_SERVER_URI:http://localhost:9000}
