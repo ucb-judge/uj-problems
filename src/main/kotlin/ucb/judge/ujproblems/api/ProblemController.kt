@@ -2,6 +2,7 @@ package ucb.judge.ujproblems.api
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ucb.judge.ujproblems.bl.ProblemBl
@@ -130,6 +131,26 @@ class ProblemController constructor(
         return ResponseEntity.ok(
             ResponseDto(
                 data = minimalInfo,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
+
+    /**
+     * Method to get all the public problems using pagination
+     */
+    @GetMapping
+    fun getAllProblems(
+        @RequestParam page: Int,
+        @RequestParam size: Int
+    ): ResponseEntity<ResponseDto<Page<ProblemTableDataDto>>> {
+        logger.info("GET: getting all problems");
+        val problems: Page<ProblemTableDataDto> = problemBl.getAllProblems(page, size);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = problems,
                 message = "Success",
                 successful = true
             )

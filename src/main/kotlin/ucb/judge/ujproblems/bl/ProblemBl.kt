@@ -2,6 +2,8 @@ package ucb.judge.ujproblems.bl
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import ucb.judge.ujproblems.dao.*
 import ucb.judge.ujproblems.dao.repository.*
@@ -184,5 +186,21 @@ class ProblemBl constructor(
         problemMinimalDto.problemId = problem.problemId;
         problemMinimalDto.title = problem.title;
         return problemMinimalDto;
+    }
+
+    /**
+     * Business logic to get all the problems for students.
+     */
+    fun getAllProblems(page: Int, size: Int): Page<ProblemTableDataDto> {
+        logger.info("Getting all problems for students")
+        val pageable = PageRequest.of(page, size);
+        return problemRepository.findAll(pageable).map {
+            ProblemTableDataDto(
+                problemId = it.problemId,
+                title = it.title,
+                timeLimit = it.maxTime,
+                memoryLimit = it.maxMemory
+            )
+        }
     }
 }
