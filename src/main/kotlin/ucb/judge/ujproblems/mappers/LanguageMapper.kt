@@ -8,7 +8,8 @@ class LanguageMapper {
         fun entityToDto(language: Language): LanguageDto {
             return LanguageDto(
                 language.languageId,
-                language.name
+                language.name,
+                language.extension
             )
         }
     }

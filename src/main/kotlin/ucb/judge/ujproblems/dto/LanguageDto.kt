@@ -1,6 +1,7 @@
 package ucb.judge.ujproblems.dto
 
 data class LanguageDto (
-    val languageId: Long = 0,
-    val name: String = ""
+    var languageId: Long = 0,
+    var name: String = "",
+    var extension: String = ""
 )
