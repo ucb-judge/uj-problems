@@ -1,16 +1,11 @@
 package ucb.judge.ujproblems.bl
 
-import org.checkerframework.checker.nullness.Opt.orElseThrow
-import org.keycloak.KeycloakSecurityContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ucb.judge.ujproblems.dao.*
 import ucb.judge.ujproblems.dao.repository.*
-import ucb.judge.ujproblems.dto.NewProblemDto
-import ucb.judge.ujproblems.dto.ProblemDto
-import ucb.judge.ujproblems.dto.ProblemLimitsDto
-import ucb.judge.ujproblems.dto.TestcaseDto
+import ucb.judge.ujproblems.dto.*
 import ucb.judge.ujproblems.exception.UjNotFoundException
 import ucb.judge.ujproblems.mappers.ProblemMapper
 import ucb.judge.ujproblems.mappers.S3ObjectMapper
@@ -176,5 +171,18 @@ class ProblemBl constructor(
         problemLimitsDto.memoryLimit = problem.maxMemory;
         problemLimitsDto.timeLimit = problem.maxTime;
         return problemLimitsDto;
+    }
+
+    /**
+     * Business logic to get a problem's minimal info.
+     */
+    fun getProblemMinimalInfo(problemId: Long): ProblemMinimalDto {
+        logger.info("Getting minimal info for problem $problemId")
+        val problem = problemRepository.findById(problemId)
+            .orElseThrow { UjNotFoundException("Problem not found") };
+        val problemMinimalDto = ProblemMinimalDto();
+        problemMinimalDto.problemId = problem.problemId;
+        problemMinimalDto.title = problem.title;
+        return problemMinimalDto;
     }
 }

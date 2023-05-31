@@ -118,4 +118,21 @@ class ProblemController constructor(
             )
         );
     }
+
+    /**
+     * Method to get a problem's minimal information by its id.
+     */
+    @GetMapping("/{id}/minimal")
+    fun getProblemMinimalInfo(@PathVariable id: Long): ResponseEntity<ResponseDto<ProblemMinimalDto>> {
+        logger.info("GET: getting problem minimal info");
+        val minimalInfo: ProblemMinimalDto = problemBl.getProblemMinimalInfo(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = minimalInfo,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
 }
