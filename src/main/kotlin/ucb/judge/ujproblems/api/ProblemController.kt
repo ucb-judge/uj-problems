@@ -156,4 +156,23 @@ class ProblemController constructor(
             )
         );
     }
+
+    /**
+     * Method to get all the admitted languages for a problem
+     */
+    @GetMapping("/{id}/languages")
+    fun getAllAdmittedLanguages(
+        @PathVariable id: Long
+    ): ResponseEntity<ResponseDto<List<LanguageDto>>> {
+        logger.info("GET: getting all admitted languages");
+        val languages: List<LanguageDto> = problemBl.getAllAdmittedLanguages(id);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = languages,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
 }

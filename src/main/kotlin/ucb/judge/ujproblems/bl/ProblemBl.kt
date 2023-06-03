@@ -203,4 +203,21 @@ class ProblemBl constructor(
             )
         }
     }
+
+    /**
+     * Business logic to get all the admitted languages for a problem.
+     */
+    fun getAllAdmittedLanguages(id: Long): List<LanguageDto> {
+        logger.info("Getting all admitted languages for problem $id")
+        val problem = problemRepository.findById(id)
+            .orElseThrow { UjNotFoundException("Problem not found") };
+        val admittedLanguages = ArrayList<LanguageDto>();
+        for (admittedLanguage in problem.admittedLanguages!!) {
+            val languageDto = LanguageDto();
+            languageDto.languageId = admittedLanguage.language!!.languageId;
+            languageDto.name = admittedLanguage.language!!.name;
+            admittedLanguages.add(languageDto);
+        }
+        return admittedLanguages;
+    }
 }
