@@ -12,11 +12,11 @@ echo "####################"
 echo "Building docker image"
 echo "####################"
 
-echo -n "Docker container name (ucb-judge-problems): "
+echo -n "Docker container name (uj-problems): "
 read container_name
 
 if [ -z "$container_name" ]; then
-    container_name="ucb-judge-problems"
+    container_name="uj-problems"
 fi
 
 while [[ -z "$version_tag" ]]; do
@@ -29,6 +29,10 @@ while [[ -z "$version_tag" ]]; do
 done
 
 docker build -t $container_name:$version_tag .
+
+echo "Deploying docker image..."
+docker tag $container_name:$version_tag ucbjudge/$container_name:$version_tag
+docker push ucbjudge/$container_name:$version_tag
 
 if [ $? -eq 0 ]; then
   echo "Operation completed successfully!"
