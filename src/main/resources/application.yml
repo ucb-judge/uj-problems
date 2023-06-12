@@ -33,6 +33,7 @@ keycloak:
   security-constraints:
     - auth-roles:
         - professor
+        - uj-problems-access
       security-collections:
         - name: Problem CRUD operations
           omitted-methods:
@@ -49,14 +50,6 @@ keycloak:
             - GET
           patterns:
             - /api/v1/problems
-#    - auth-roles:
-#      - uj-problems-access
-#      security-collections:
-#        - name: Check if problem exists
-#          methods:
-#            - GET
-#          patterns:
-#            - /api/v1/problems/{id}/exists
 
 minio:
   url: ${MINIO_SERVER_URI:http://localhost:9000}

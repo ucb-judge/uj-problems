@@ -84,7 +84,7 @@ class ProblemBl constructor(
         val admittedLanguages = ArrayList<AdmittedLanguage>();
         for(language in newProblem.languages) {
             // store language in database
-            val languageEntity = languageRepository.findById(language)
+            val languageEntity = languageRepository.findById(language.toLong())
                 .orElseThrow { UjNotFoundException("Language not found") };
             admittedLanguages.add(AdmittedLanguage(languageEntity, newProblemEntity))
         }
@@ -94,7 +94,7 @@ class ProblemBl constructor(
         val problemTags = ArrayList<ProblemTag>();
         for(tag in newProblem.tags) {
             // store tag in database
-            val tagEntity = tagRepository.findById(tag)
+            val tagEntity = tagRepository.findById(tag.toLong())
                 .orElseThrow() { UjNotFoundException("Tag not found") };
             problemTags.add(ProblemTag(tagEntity, newProblemEntity));
         }

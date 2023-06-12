@@ -175,4 +175,24 @@ class ProblemController constructor(
             )
         );
     }
+
+    /**
+     * Method to get all the public problems using pagination
+     */
+    @GetMapping("/public")
+    fun getAllPublicProblems(
+        @RequestParam page: Int,
+        @RequestParam size: Int
+    ): ResponseEntity<ResponseDto<Page<ProblemTableDataDto>>> {
+        logger.info("GET: getting all public problems");
+        val problems: Page<ProblemTableDataDto> = problemBl.getAllProblems(page, size);
+        logger.info("Sending response");
+        return ResponseEntity.ok(
+            ResponseDto(
+                data = problems,
+                message = "Success",
+                successful = true
+            )
+        );
+    }
 }

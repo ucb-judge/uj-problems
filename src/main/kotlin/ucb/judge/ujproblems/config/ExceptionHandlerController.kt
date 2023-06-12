@@ -19,7 +19,7 @@ class ExceptionHandlerController {
     @ExceptionHandler(UjNotFoundException::class)
     fun handleUjNotFoundException(e: UjNotFoundException): ResponseEntity<ResponseDto<Nothing>> {
         val message = e.message ?: "Not found"
-        logger.error("UjNotFoundException: ${message}")
+        logger.error("UjNotFoundException: $message")
         return ResponseEntity(ResponseDto(
             data = null,
             message = message,
